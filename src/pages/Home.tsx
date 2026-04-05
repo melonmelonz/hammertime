@@ -223,7 +223,7 @@ export function HomePage() {
               Ready for War?
             </h2>
             <p className="text-steel-400 mb-8">
-              Join thousands of commanders building their forces on Warscribe.
+              Join thousands of commanders building their forces on Hammertime.
             </p>
             <Link to="/builder">
               <Button variant="primary" size="lg">

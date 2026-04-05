@@ -53,7 +53,7 @@ export function Header() {
             </svg>
           </div>
           <span className="font-display text-xl font-bold tracking-[0.12em] uppercase text-steel-50 group-hover:text-gold-300 transition-colors">
-            Warscribe
+            Hammertime
           </span>
         </Link>
 
@@ -98,7 +98,7 @@ export function Header() {
             New Roster
           </Button>
           <a
-            href="https://github.com/melonmelonz/warscribe"
+            href="https://github.com/melonmelonz/hammertime"
             target="_blank"
             rel="noopener noreferrer"
             className={cn(

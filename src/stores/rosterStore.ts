@@ -136,7 +136,7 @@ export const useRosterStore = create<RosterState>()(
       },
     }),
     {
-      name: 'warscribe-rosters',
+      name: 'hammertime-rosters',
       version: 1,
     },
   ),

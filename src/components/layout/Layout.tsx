@@ -11,7 +11,7 @@ export function Layout() {
       <footer className="border-t border-steel-800 py-6 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-steel-500">
           <div className="flex items-center gap-2">
-            <span className="font-display font-bold tracking-widest uppercase text-steel-400">Warscribe</span>
+            <span className="font-display font-bold tracking-widest uppercase text-steel-400">Hammertime</span>
             <span className="text-steel-700">|</span>
             <span>Powered by community BSData</span>
           </div>
@@ -25,7 +25,7 @@ export function Layout() {
               BSData Project
             </a>
             <a
-              href="https://github.com/melonmelonz/warscribe"
+              href="https://github.com/melonmelonz/hammertime"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-steel-300 transition-colors"

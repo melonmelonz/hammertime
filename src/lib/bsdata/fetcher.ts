@@ -58,7 +58,7 @@ export const KNOWN_REPOS: KnownRepo[] = [
   },
 ]
 
-const CACHE_PREFIX = 'warscribe_bsdata_'
+const CACHE_PREFIX = 'hammertime_bsdata_'
 const CACHE_VERSION = 1
 
 interface CacheEntry {
