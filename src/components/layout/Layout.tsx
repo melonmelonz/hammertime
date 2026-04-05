@@ -25,7 +25,7 @@ export function Layout() {
               BSData Project
             </a>
             <a
-              href="https://github.com/yascherice/warscribe"
+              href="https://github.com/melonmelonz/warscribe"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-steel-300 transition-colors"

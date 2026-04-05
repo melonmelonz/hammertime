@@ -98,7 +98,7 @@ export function Header() {
             New Roster
           </Button>
           <a
-            href="https://github.com/yascherice/warscribe"
+            href="https://github.com/melonmelonz/warscribe"
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
