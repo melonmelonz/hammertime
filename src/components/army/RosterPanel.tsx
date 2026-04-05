@@ -15,7 +15,7 @@ interface RosterPanelProps {
 }
 
 function selectionCost(s: RosterSelection): number {
-  return (s.costs ?? []).reduce((sum, c) => sum + c.value, 0) * s.number
+  return (s.costs ?? []).reduce((sum, c) => sum + (c.value ?? 0), 0) * Math.max(s.number ?? 1, 1)
     + s.selections.reduce((t, child) => t + selectionCost(child), 0)
 }
 

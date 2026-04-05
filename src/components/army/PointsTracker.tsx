@@ -8,8 +8,9 @@ interface PointsTrackerProps {
 }
 
 export function PointsTracker({ current, limit, className }: PointsTrackerProps) {
-  const pct = limit > 0 ? Math.min(current / limit, 1) : 0
-  const over = current > limit && limit > 0
+  const safeCurrent = isNaN(current) || !isFinite(current) ? 0 : current
+  const pct = limit > 0 ? Math.min(safeCurrent / limit, 1) : 0
+  const over = safeCurrent > limit && limit > 0
 
   const barColor = over
     ? 'bg-blood-500'
@@ -27,7 +28,7 @@ export function PointsTracker({ current, limit, className }: PointsTrackerProps)
             over ? 'text-blood-400' : pct > 0.9 ? 'text-amber-400' : 'text-gold-400',
           )}
         >
-          {formatPoints(current)}
+          {formatPoints(safeCurrent)}
           <span className="text-steel-500 font-normal text-sm mx-1">/</span>
           <span className="text-steel-300 text-sm">{formatPoints(limit)}</span>
         </span>
@@ -43,7 +44,7 @@ export function PointsTracker({ current, limit, className }: PointsTrackerProps)
 
       {over && (
         <p className="text-xs text-blood-400 font-mono">
-          {formatPoints(current - limit)} pts over limit
+          {formatPoints(safeCurrent - limit)} pts over limit
         </p>
       )}
     </div>

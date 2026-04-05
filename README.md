@@ -1,6 +1,8 @@
-# Warscribe
+# Hammertime
 
 **Professional Warhammer 40,000 army builder** powered by community [BSData](https://github.com/BSData).
+
+🔗 **Live site: [hammertime-2d8.pages.dev](https://hammertime-2d8.pages.dev)**
 
 > Built with React + TypeScript + Vite + Tailwind CSS v4. Deployed on Cloudflare Pages.
 
@@ -48,7 +50,7 @@ The site deploys automatically to Cloudflare Pages on every push to `main`.
 To deploy manually:
 ```bash
 npm run build
-npx wrangler pages deploy dist --project-name warscribe
+npx wrangler pages deploy dist --project-name hammertime
 ```
 
 ## Data Sources

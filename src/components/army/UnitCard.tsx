@@ -13,7 +13,7 @@ interface UnitCardProps {
 }
 
 function getCost(entry: BSSelectionEntry): number {
-  return (entry.costs ?? []).reduce((sum, c) => sum + c.value, 0)
+  return (entry.costs ?? []).reduce((sum, c) => sum + (c.value ?? 0), 0)
 }
 
 function getType(entry: BSSelectionEntry): string {

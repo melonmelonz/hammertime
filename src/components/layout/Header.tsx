@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   ShieldCheckIcon,
@@ -19,6 +19,7 @@ const NAV = [
 
 export function Header() {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
@@ -93,7 +94,7 @@ export function Header() {
           <Button
             variant="primary"
             size="sm"
-            onClick={() => {}}
+            onClick={() => navigate('/builder')}
           >
             New Roster
           </Button>

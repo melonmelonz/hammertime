@@ -41,6 +41,7 @@ export function BuilderPage() {
     setActiveRoster,
     addForceToActive,
     addUnit,
+    addUnitWithForce,
     removeUnit,
     renameActiveRoster,
     setActivePointsLimit,
@@ -55,73 +56,81 @@ export function BuilderPage() {
 
   const handleCreateRoster = useCallback(() => {
     if (!gameSystem) return
+
     const id = newRoster({
       name: newRosterForm.name,
       gameSystemId: gameSystem.id,
       gameSystemRevision: gameSystem.revision,
       pointsLimit: newRosterForm.pointsLimit,
     })
-    // Auto-add a default force if forceEntries exist
-    if (gameSystem.forceEntries?.[0] && activeRepo) {
-      const forceEntry = gameSystem.forceEntries[0]
-      // Find the catalogue matching active repo
-      const cat = catalogues[0]
-      if (cat) {
-        addForceToActive({
-          name: forceEntry.name,
-          entryId: forceEntry.id,
-          catalogueId: cat.id,
-          catalogueName: cat.name,
-          catalogueRevision: cat.revision,
-        })
-      }
+
+    // Auto-add the first available force from the first non-library catalogue
+    const forceEntry = gameSystem.forceEntries?.[0]
+    const cat = catalogues.find((c) => !c.library) ?? catalogues[0]
+    if (forceEntry && cat) {
+      addForceToActive({
+        name: forceEntry.name,
+        entryId: forceEntry.id,
+        catalogueId: cat.id,
+        catalogueName: cat.name,
+        catalogueRevision: cat.revision,
+      })
     }
+
     setNewRosterOpen(false)
     setActiveRoster(id)
-  }, [gameSystem, newRosterForm, activeRepo, catalogues, newRoster, addForceToActive, setActiveRoster])
+  }, [gameSystem, newRosterForm, catalogues, newRoster, addForceToActive, setActiveRoster])
 
   const handleAddUnit = useCallback((entry: BSSelectionEntry, catalogueId: string) => {
+    const cat = catalogues.find((c) => c.id === catalogueId)
+    const forceEntry = gameSystem?.forceEntries?.[0]
+
+    // No roster yet — create one, add a force, and add the unit atomically
     if (!roster) {
-      // Auto-create roster if none exists
       if (!gameSystem) return
-      const id = newRoster({
+      newRoster({
         name: 'My Army',
         gameSystemId: gameSystem.id,
         gameSystemRevision: gameSystem.revision,
         pointsLimit: 2000,
       })
-      const cat = catalogues.find((c) => c.id === catalogueId)
-      if (cat && gameSystem.forceEntries?.[0]) {
-        addForceToActive({
-          name: gameSystem.forceEntries[0].name,
-          entryId: gameSystem.forceEntries[0].id,
-          catalogueId: cat.id,
-          catalogueName: cat.name,
-          catalogueRevision: cat.revision,
-        })
+      if (forceEntry && cat) {
+        // addUnitWithForce does everything in one state update — no race condition
+        addUnitWithForce(
+          {
+            name: forceEntry.name,
+            entryId: forceEntry.id,
+            catalogueId: cat.id,
+            catalogueName: cat.name,
+            catalogueRevision: cat.revision,
+          },
+          entry,
+        )
       }
-      setActiveRoster(id)
-      // Need to add unit after state settles — defer slightly
-      setTimeout(() => addUnit(id, entry), 50)
       return
     }
 
+    // Roster exists but no force yet — add force then unit atomically
     if (roster.forces.length === 0) {
-      const cat = catalogues.find((c) => c.id === catalogueId)
-      if (cat && gameSystem?.forceEntries?.[0]) {
-        addForceToActive({
-          name: gameSystem.forceEntries[0].name,
-          entryId: gameSystem.forceEntries[0].id,
-          catalogueId: cat.id,
-          catalogueName: cat.name,
-          catalogueRevision: cat.revision,
-        })
+      if (forceEntry && cat) {
+        addUnitWithForce(
+          {
+            name: forceEntry.name,
+            entryId: forceEntry.id,
+            catalogueId: cat.id,
+            catalogueName: cat.name,
+            catalogueRevision: cat.revision,
+          },
+          entry,
+        )
       }
+      return
     }
 
-    const forceId = roster.forces[0]?.id
-    if (forceId) addUnit(forceId, entry)
-  }, [roster, gameSystem, catalogues, newRoster, addForceToActive, addUnit, setActiveRoster])
+    // Normal case — add unit to the first force
+    const forceId = roster.forces[0].id
+    addUnit(forceId, entry)
+  }, [roster, gameSystem, catalogues, newRoster, addUnit, addUnitWithForce])
 
   const handleRemoveUnit = useCallback((forceId: string, selectionId: string) => {
     removeUnit(forceId, selectionId)
@@ -216,7 +225,6 @@ export function BuilderPage() {
 
         <div className="flex-1" />
 
-        {/* Roster switcher */}
         {rosters.length > 0 && (
           <select
             value={activeRosterId ?? ''}
@@ -278,7 +286,7 @@ export function BuilderPage() {
               </div>
               <div>
                 <p className="text-steel-400 font-semibold mb-1">No roster open</p>
-                <p className="text-steel-600 text-sm">Create a new roster to start adding units</p>
+                <p className="text-steel-600 text-sm">Create a new roster or click a unit to start</p>
               </div>
               <Button
                 variant="primary"
