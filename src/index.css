@@ -1,0 +1,188 @@
+@import "tailwindcss";
+
+@theme {
+  --color-void-950: #06060c;
+  --color-void-900: #0c0c16;
+  --color-void-800: #12121f;
+  --color-void-700: #1a1a2e;
+  --color-void-600: #22223c;
+  --color-void-500: #2e2e50;
+
+  --color-steel-900: #1c1c28;
+  --color-steel-800: #252535;
+  --color-steel-700: #30303f;
+  --color-steel-600: #3d3d52;
+  --color-steel-500: #4e4e66;
+  --color-steel-400: #6b6b88;
+  --color-steel-300: #8f8faa;
+  --color-steel-200: #b8b8cc;
+  --color-steel-100: #e2e2ee;
+  --color-steel-50: #f0f0f8;
+
+  --color-gold-900: #3a2a0a;
+  --color-gold-800: #5c3f0f;
+  --color-gold-700: #7d5614;
+  --color-gold-600: #9e6e1a;
+  --color-gold-500: #c08a22;
+  --color-gold-400: #d4a43a;
+  --color-gold-300: #e0bc62;
+  --color-gold-200: #ead48e;
+  --color-gold-100: #f5e9c0;
+
+  --color-blood-900: #2a0808;
+  --color-blood-800: #4a0e0e;
+  --color-blood-700: #6b1515;
+  --color-blood-600: #8b1c1c;
+  --color-blood-500: #a82424;
+  --color-blood-400: #c43030;
+  --color-blood-300: #d96060;
+  --color-blood-200: #e89090;
+
+  --color-purity-50: #f8f6f0;
+  --color-purity-100: #ede8da;
+  --color-purity-200: #d4ccb8;
+  --color-purity-300: #b8ad94;
+
+  --font-display: 'Barlow Condensed', 'Impact', system-ui, sans-serif;
+  --font-body: 'Inter', 'Helvetica Neue', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', monospace;
+
+  --radius-sm: 2px;
+  --radius-md: 4px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+
+  --shadow-glow-gold: 0 0 20px rgba(192, 138, 34, 0.25);
+  --shadow-glow-blood: 0 0 20px rgba(168, 36, 36, 0.3);
+  --shadow-panel: 0 4px 24px rgba(0, 0, 0, 0.6);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-void-950);
+  color: var(--color-steel-100);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-void-900);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-steel-600);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-steel-500);
+}
+
+/* Selection */
+::selection {
+  background: rgba(192, 138, 34, 0.3);
+  color: var(--color-gold-100);
+}
+
+/* Focus ring */
+:focus-visible {
+  outline: 2px solid var(--color-gold-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-md);
+}
+
+/* Decorative separator */
+.sep-ornament {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-steel-500);
+}
+.sep-ornament::before,
+.sep-ornament::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-steel-600));
+}
+.sep-ornament::after {
+  background: linear-gradient(90deg, var(--color-steel-600), transparent);
+}
+
+/* Texture overlay for panels */
+.panel-texture {
+  background-image:
+    radial-gradient(ellipse at 0% 0%, rgba(192, 138, 34, 0.04) 0%, transparent 60%),
+    radial-gradient(ellipse at 100% 100%, rgba(168, 36, 36, 0.03) 0%, transparent 60%);
+}
+
+/* Shimmer animation for loading */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-void-800) 25%,
+    var(--color-void-700) 50%,
+    var(--color-void-800) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* Glow pulse animation */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Slide up animation */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.2s ease-out forwards;
+}
+
+/* Fade in */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out forwards;
+}
