@@ -13,37 +13,31 @@ export function PointsTracker({ current, limit, className }: PointsTrackerProps)
   const over = safeCurrent > limit && limit > 0
 
   const barColor = over
-    ? 'bg-blood-500'
+    ? 'bg-red-500'
     : pct > 0.9
       ? 'bg-amber-500'
-      : 'bg-gold-500'
+      : 'bg-amber-500'
+
+  const textColor = over ? 'text-red-600 dark:text-red-400' : 'text-amber-700 dark:text-amber-400'
 
   return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
+    <div className={cn('space-y-1.5', className)}>
       <div className="flex items-baseline justify-between">
-        <span className="text-xs font-mono text-steel-400 uppercase tracking-widest">Points</span>
-        <span
-          className={cn(
-            'font-display text-lg font-bold tracking-wide',
-            over ? 'text-blood-400' : pct > 0.9 ? 'text-amber-400' : 'text-gold-400',
-          )}
-        >
+        <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Points</span>
+        <span className={cn('font-display text-lg font-bold leading-none', textColor)}>
           {formatPoints(safeCurrent)}
-          <span className="text-steel-500 font-normal text-sm mx-1">/</span>
-          <span className="text-steel-300 text-sm">{formatPoints(limit)}</span>
+          <span className="text-neutral-400 dark:text-neutral-500 font-normal text-sm mx-1">/</span>
+          <span className="text-neutral-600 dark:text-neutral-300 text-sm">{formatPoints(limit)}</span>
         </span>
       </div>
-
-      {/* Bar */}
-      <div className="h-1.5 bg-void-700 rounded-full overflow-hidden">
+      <div className="h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
         <div
-          className={cn('h-full rounded-full transition-all duration-300', barColor)}
+          className={cn('h-full rounded-full transition-all duration-500', barColor)}
           style={{ width: `${pct * 100}%` }}
         />
       </div>
-
       {over && (
-        <p className="text-xs text-blood-400 font-mono">
+        <p className="text-xs text-red-600 dark:text-red-400">
           {formatPoints(safeCurrent - limit)} pts over limit
         </p>
       )}

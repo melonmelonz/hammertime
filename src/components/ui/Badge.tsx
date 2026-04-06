@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 
-type Variant = 'default' | 'gold' | 'blood' | 'success' | 'warning' | 'muted'
+type Variant = 'default' | 'amber' | 'red' | 'green' | 'blue' | 'muted'
 
 interface BadgeProps {
   variant?: Variant
@@ -10,29 +10,22 @@ interface BadgeProps {
 }
 
 const variants: Record<Variant, string> = {
-  default: 'bg-steel-700 text-steel-200 border-steel-600',
-  gold: 'bg-gold-900/60 text-gold-300 border-gold-700',
-  blood: 'bg-blood-900/60 text-blood-300 border-blood-700',
-  success: 'bg-emerald-900/60 text-emerald-300 border-emerald-700',
-  warning: 'bg-amber-900/60 text-amber-300 border-amber-700',
-  muted: 'bg-void-800 text-steel-400 border-void-700',
+  default: 'bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400',
+  amber:   'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+  red:     'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+  green:   'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+  blue:    'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  muted:   'bg-neutral-50 text-neutral-400 dark:bg-neutral-900 dark:text-neutral-500',
 }
 
 const sizes = {
-  sm: 'text-[10px] px-1.5 py-0.5 rounded-[2px]',
-  md: 'text-xs px-2 py-0.5 rounded-[3px]',
+  sm: 'text-[10px] px-1.5 py-0 rounded',
+  md: 'text-xs px-2 py-0.5 rounded-md',
 }
 
 export function Badge({ variant = 'default', size = 'md', children, className }: BadgeProps) {
   return (
-    <span
-      className={cn(
-        'inline-flex items-center font-mono font-medium tracking-wide border uppercase',
-        variants[variant],
-        sizes[size],
-        className,
-      )}
-    >
+    <span className={cn('inline-flex items-center font-medium', variants[variant], sizes[size], className)}>
       {children}
     </span>
   )

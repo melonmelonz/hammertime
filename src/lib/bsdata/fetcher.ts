@@ -5,6 +5,9 @@ import type { BSCatalogue, BSGameSystem } from './types'
 const GITHUB_RAW = 'https://raw.githubusercontent.com'
 const GITHUB_API = 'https://api.github.com'
 
+// Optional GitHub token via env var — raises rate limit from 60 to 5000 req/hr
+const GITHUB_TOKEN = import.meta.env.VITE_GITHUB_TOKEN as string | undefined
+
 export interface RepoFile {
   name: string
   path: string
@@ -24,12 +27,11 @@ export interface KnownRepo {
   icon?: string
 }
 
-// Supported game systems with their BSData repositories
 export const KNOWN_REPOS: KnownRepo[] = [
   {
     id: 'wh40k-10e',
     name: 'Warhammer 40,000',
-    description: '10th Edition — All factions and detachments',
+    description: '10th Edition — all factions and detachments',
     org: 'BSData',
     repo: 'wh40k-10e',
     branch: 'main',
@@ -37,50 +39,40 @@ export const KNOWN_REPOS: KnownRepo[] = [
     icon: '⚔️',
   },
   {
-    id: 'wh40k-killteam',
-    name: 'Kill Team',
-    description: '2021 Edition — Skirmish battles in the 41st Millennium',
-    org: 'BSData',
-    repo: 'killteam',
-    branch: 'master',
-    gameSystemFile: 'Kill Team.gst',
-    icon: '🎯',
-  },
-  {
     id: 'horus-heresy',
     name: 'Horus Heresy',
-    description: 'Age of Darkness — The galaxy in flames',
+    description: 'Age of Darkness — the galaxy in flames',
     org: 'BSData',
     repo: 'horus-heresy',
-    branch: 'master',
+    branch: 'main',
     gameSystemFile: 'Horus Heresy.gst',
     icon: '🔥',
   },
 ]
 
-const CACHE_PREFIX = 'hammertime_bsdata_'
-const CACHE_VERSION = 1
+const CACHE_PREFIX = 'hammertime_bsdata_v2_'
 
 interface CacheEntry {
-  version: number
   sha: string
   data: string
   timestamp: number
 }
 
+const CACHE_TTL_MS = 12 * 60 * 60 * 1000 // 12 hours
+
 function cacheKey(org: string, repo: string, file: string): string {
   return `${CACHE_PREFIX}${org}_${repo}_${file.replace(/[^a-z0-9]/gi, '_')}`
 }
 
-function readCache(key: string): CacheEntry | null {
+function readCache(key: string, sha?: string): string | null {
   try {
     const raw = localStorage.getItem(key)
     if (!raw) return null
     const entry = JSON.parse(raw) as CacheEntry
-    if (entry.version !== CACHE_VERSION) return null
-    // Expire after 24 hours
-    if (Date.now() - entry.timestamp > 24 * 60 * 60 * 1000) return null
-    return entry
+    if (Date.now() - entry.timestamp > CACHE_TTL_MS) return null
+    // If we have a sha to compare, only use cache when sha matches
+    if (sha && entry.sha !== sha) return null
+    return entry.data
   } catch {
     return null
   }
@@ -88,55 +80,75 @@ function readCache(key: string): CacheEntry | null {
 
 function writeCache(key: string, sha: string, data: string): void {
   try {
-    const entry: CacheEntry = { version: CACHE_VERSION, sha, data, timestamp: Date.now() }
+    const entry: CacheEntry = { sha, data, timestamp: Date.now() }
     localStorage.setItem(key, JSON.stringify(entry))
   } catch {
-    // LocalStorage might be full — silently ignore
+    // Silently ignore — localStorage may be full
   }
+}
+
+function githubHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github.v3+json',
+  }
+  if (GITHUB_TOKEN) {
+    headers['Authorization'] = `Bearer ${GITHUB_TOKEN}`
+  }
+  return headers
 }
 
 export async function fetchRepoContents(known: KnownRepo): Promise<RepoFile[]> {
   const url = `${GITHUB_API}/repos/${known.org}/${known.repo}/contents?ref=${known.branch}`
-  const res = await fetch(url, {
-    headers: { Accept: 'application/vnd.github.v3+json' },
-  })
-  if (!res.ok) throw new Error(`GitHub API error: ${res.status} ${res.statusText}`)
+  const res = await fetch(url, { headers: githubHeaders() })
+
+  if (!res.ok) {
+    if (res.status === 403) {
+      const remaining = res.headers.get('x-ratelimit-remaining')
+      if (remaining === '0') {
+        const reset = res.headers.get('x-ratelimit-reset')
+        const resetTime = reset ? new Date(Number(reset) * 1000).toLocaleTimeString() : 'soon'
+        throw new Error(`GitHub rate limit reached. Resets at ${resetTime}. Add a VITE_GITHUB_TOKEN to your environment to increase the limit.`)
+      }
+    }
+    if (res.status === 404) {
+      throw new Error(`Repository not found: ${known.org}/${known.repo}. The BSData repo may have been renamed or moved.`)
+    }
+    throw new Error(`GitHub API error ${res.status}: ${res.statusText}`)
+  }
+
   const files = (await res.json()) as RepoFile[]
-  return files.filter((f) => f.name.endsWith('.cat') || f.name.endsWith('.gst') || f.name.endsWith('.catz') || f.name.endsWith('.gstz'))
+  return files.filter((f) =>
+    f.name.endsWith('.cat') ||
+    f.name.endsWith('.gst') ||
+    f.name.endsWith('.catz') ||
+    f.name.endsWith('.gstz')
+  )
 }
 
-async function fetchRawFile(url: string): Promise<string> {
+async function fetchText(url: string): Promise<string> {
   const res = await fetch(url)
-  if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`)
+  if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status} ${res.statusText}`)
   return res.text()
 }
 
-async function fetchAndDecompress(url: string, filename: string): Promise<string> {
+async function fetchAndDecompress(downloadUrl: string, filename: string): Promise<string> {
   if (filename.endsWith('z')) {
-    // Compressed — fetch as binary and decompress
-    const res = await fetch(url)
-    if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`)
+    const res = await fetch(downloadUrl)
+    if (!res.ok) throw new Error(`Failed to fetch ${downloadUrl}: ${res.status}`)
     const buffer = await res.arrayBuffer()
     const zip = await JSZip.loadAsync(buffer)
-    const innerName = filename.slice(0, -1) // .catz → .cat, .gstz → .gst
-    const file = zip.file(innerName)
-    if (!file) {
-      // Try first file in zip
-      const files = Object.values(zip.files)
-      if (!files[0]) throw new Error('Empty zip archive')
-      return files[0].async('string')
-    }
+    const innerName = filename.slice(0, -1)
+    const file = zip.file(innerName) ?? Object.values(zip.files)[0]
+    if (!file) throw new Error('Empty zip archive')
     return file.async('string')
   }
-  return fetchRawFile(url)
+  return fetchText(downloadUrl)
 }
 
 export async function fetchGameSystem(known: KnownRepo, sha?: string): Promise<BSGameSystem> {
   const key = cacheKey(known.org, known.repo, known.gameSystemFile)
-  const cached = readCache(key)
-  if (cached && sha && cached.sha === sha) {
-    return parseGameSystem(cached.data)
-  }
+  const cached = readCache(key, sha)
+  if (cached) return parseGameSystem(cached)
 
   const rawUrl = `${GITHUB_RAW}/${known.org}/${known.repo}/${known.branch}/${encodeURIComponent(known.gameSystemFile)}`
   const xml = await fetchAndDecompress(rawUrl, known.gameSystemFile)
@@ -146,10 +158,8 @@ export async function fetchGameSystem(known: KnownRepo, sha?: string): Promise<B
 
 export async function fetchCatalogue(known: KnownRepo, file: RepoFile): Promise<BSCatalogue> {
   const key = cacheKey(known.org, known.repo, file.name)
-  const cached = readCache(key)
-  if (cached && cached.sha === file.sha) {
-    return parseCatalogue(cached.data)
-  }
+  const cached = readCache(key, file.sha)
+  if (cached) return parseCatalogue(cached)
 
   const xml = await fetchAndDecompress(file.download_url, file.name)
   writeCache(key, file.sha, xml)
@@ -170,7 +180,9 @@ export async function fetchAllCatalogues(
   onProgress?.({ stage: 'listing', loaded: 0, total: 1 })
   const files = await fetchRepoContents(known)
 
-  const gstFile = files.find((f) => f.name === known.gameSystemFile || f.name === known.gameSystemFile + 'z')
+  const gstFile = files.find(
+    (f) => f.name === known.gameSystemFile || f.name === `${known.gameSystemFile}z`
+  )
   onProgress?.({ stage: 'gameSystem', loaded: 0, total: 1 })
   const gameSystem = await fetchGameSystem(known, gstFile?.sha)
 
@@ -179,12 +191,12 @@ export async function fetchAllCatalogues(
 
   for (let i = 0; i < catFiles.length; i++) {
     const f = catFiles[i]
-    onProgress?.({ stage: 'catalogues', loaded: i, total: catFiles.length, currentFile: f.name })
+    onProgress?.({ stage: 'catalogues', loaded: i, total: catFiles.length, currentFile: f.name.replace(/\.catz?$/, '') })
     try {
       const cat = await fetchCatalogue(known, f)
       catalogues.push(cat)
     } catch (err) {
-      console.warn(`Failed to load catalogue ${f.name}:`, err)
+      console.warn(`Skipping catalogue ${f.name}:`, err)
     }
   }
 

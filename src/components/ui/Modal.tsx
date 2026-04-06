@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { cn } from '@/lib/utils'
-import { Button } from './Button'
 
 interface ModalProps {
   open: boolean
@@ -24,23 +23,15 @@ const sizeClasses = {
 export function Modal({ open, onClose, title, description, size = 'md', children, className }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null)
 
-  // Close on Escape
   useEffect(() => {
     if (!open) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-    }
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     document.addEventListener('keydown', handler)
     return () => document.removeEventListener('keydown', handler)
   }, [open, onClose])
 
-  // Trap scroll
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = ''
-    }
+    document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [open])
 
@@ -48,59 +39,52 @@ export function Modal({ open, onClose, title, description, size = 'md', children
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
           <motion.div
-            className="absolute inset-0 bg-void-950/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
-
-          {/* Panel */}
           <motion.div
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
             aria-labelledby={title ? 'modal-title' : undefined}
             className={cn(
-              'relative w-full z-10',
-              'bg-void-800 border border-steel-700',
-              'shadow-[0_24px_64px_rgba(0,0,0,0.8)]',
-              'rounded-[4px] overflow-hidden',
+              'relative w-full z-10 rounded-xl overflow-hidden',
+              'bg-white dark:bg-neutral-900',
+              'border border-neutral-200 dark:border-neutral-700',
+              'shadow-2xl shadow-black/20 dark:shadow-black/60',
               sizeClasses[size],
               className,
             )}
-            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+            initial={{ opacity: 0, scale: 0.97, y: 6 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: 8 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            exit={{ opacity: 0, scale: 0.97, y: 6 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
           >
-            {/* Header */}
             {(title || description) && (
-              <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4 border-b border-steel-700">
+              <div className="flex items-start justify-between gap-4 px-6 pt-5 pb-4 border-b border-neutral-100 dark:border-neutral-800">
                 <div>
                   {title && (
-                    <h2 id="modal-title" className="font-display text-xl font-semibold tracking-wide text-steel-50 uppercase">
+                    <h2 id="modal-title" className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
                       {title}
                     </h2>
                   )}
                   {description && (
-                    <p className="mt-1 text-sm text-steel-400">{description}</p>
+                    <p className="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400">{description}</p>
                   )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="xs"
+                <button
                   onClick={onClose}
+                  className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:bg-neutral-800 dark:hover:text-neutral-200 transition-colors cursor-pointer shrink-0"
                   aria-label="Close"
-                  icon={<XMarkIcon />}
-                  className="shrink-0 mt-0.5"
-                />
+                >
+                  <XMarkIcon className="size-4" />
+                </button>
               </div>
             )}
-
-            {/* Content */}
             <div className="p-6">{children}</div>
           </motion.div>
         </div>

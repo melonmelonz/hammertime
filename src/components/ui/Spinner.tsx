@@ -15,7 +15,9 @@ export function Spinner({ size = 'md', className }: SpinnerProps) {
   return (
     <span
       className={cn(
-        'inline-block rounded-full border-steel-600 border-t-gold-500 animate-spin',
+        'inline-block rounded-full animate-spin',
+        'border-neutral-300 border-t-amber-600',
+        'dark:border-neutral-700 dark:border-t-amber-400',
         sizes[size],
         className,
       )}
@@ -27,9 +29,9 @@ export function Spinner({ size = 'md', className }: SpinnerProps) {
 
 export function LoadingOverlay({ message }: { message?: string }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 py-16 text-steel-400">
+    <div className="flex flex-col items-center justify-center gap-3 py-16 text-neutral-400">
       <Spinner size="lg" />
-      {message && <p className="text-sm font-mono">{message}</p>}
+      {message && <p className="text-sm">{message}</p>}
     </div>
   )
 }

@@ -4,6 +4,7 @@ import {
   PlusIcon,
   ArrowLeftIcon,
   ExclamationTriangleIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline'
 import { cn } from '@/lib/utils'
 import { useCatalogueStore } from '@/stores/catalogueStore'
@@ -64,7 +65,6 @@ export function BuilderPage() {
       pointsLimit: newRosterForm.pointsLimit,
     })
 
-    // Auto-add the first available force from the first non-library catalogue
     const forceEntry = gameSystem.forceEntries?.[0]
     const cat = catalogues.find((c) => !c.library) ?? catalogues[0]
     if (forceEntry && cat) {
@@ -85,7 +85,6 @@ export function BuilderPage() {
     const cat = catalogues.find((c) => c.id === catalogueId)
     const forceEntry = gameSystem?.forceEntries?.[0]
 
-    // No roster yet — create one, add a force, and add the unit atomically
     if (!roster) {
       if (!gameSystem) return
       newRoster({
@@ -95,7 +94,6 @@ export function BuilderPage() {
         pointsLimit: 2000,
       })
       if (forceEntry && cat) {
-        // addUnitWithForce does everything in one state update — no race condition
         addUnitWithForce(
           {
             name: forceEntry.name,
@@ -110,7 +108,6 @@ export function BuilderPage() {
       return
     }
 
-    // Roster exists but no force yet — add force then unit atomically
     if (roster.forces.length === 0) {
       if (forceEntry && cat) {
         addUnitWithForce(
@@ -127,9 +124,7 @@ export function BuilderPage() {
       return
     }
 
-    // Normal case — add unit to the first force
-    const forceId = roster.forces[0].id
-    addUnit(forceId, entry)
+    addUnit(roster.forces[0].id, entry)
   }, [roster, gameSystem, catalogues, newRoster, addUnit, addUnitWithForce])
 
   const handleRemoveUnit = useCallback((forceId: string, selectionId: string) => {
@@ -143,25 +138,26 @@ export function BuilderPage() {
         <Spinner size="lg" />
         <div className="text-center">
           {progress?.stage === 'listing' && (
-            <p className="text-steel-300 font-mono text-sm">Fetching catalogue index...</p>
+            <p className="text-neutral-600 dark:text-neutral-400 text-sm">Fetching catalogue index...</p>
           )}
           {progress?.stage === 'gameSystem' && (
-            <p className="text-steel-300 font-mono text-sm">Loading game system...</p>
+            <p className="text-neutral-600 dark:text-neutral-400 text-sm">Loading game system...</p>
           )}
           {progress?.stage === 'catalogues' && (
             <>
-              <p className="text-steel-300 font-mono text-sm">
+              <p className="text-neutral-600 dark:text-neutral-400 text-sm">
                 Loading catalogues ({progress.loaded}/{progress.total})
               </p>
               {progress.currentFile && (
-                <p className="text-steel-500 font-mono text-xs mt-1 truncate max-w-xs">
+                <p className="text-neutral-400 dark:text-neutral-500 text-xs mt-1 truncate max-w-xs">
                   {progress.currentFile}
                 </p>
               )}
-              <div className="mt-3 w-48 h-1 bg-void-700 rounded-full overflow-hidden">
+              <div className="mt-4 w-56 h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gold-500 rounded-full"
+                  className="h-full bg-amber-500 rounded-full"
                   animate={{ width: `${(progress.loaded / Math.max(progress.total, 1)) * 100}%` }}
+                  transition={{ duration: 0.3 }}
                 />
               </div>
             </>
@@ -174,11 +170,13 @@ export function BuilderPage() {
   // ── Error state ─────────────────────────────────────────────────────────────
   if (error) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 p-8">
-        <ExclamationTriangleIcon className="size-10 text-blood-500" />
+      <div className="flex-1 flex flex-col items-center justify-center gap-5 p-8">
+        <div className="size-14 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+          <ExclamationTriangleIcon className="size-7 text-red-500" />
+        </div>
         <div className="text-center">
-          <p className="text-steel-200 font-semibold">Failed to load game data</p>
-          <p className="text-steel-500 text-sm mt-1 max-w-sm">{error}</p>
+          <p className="text-neutral-800 dark:text-neutral-200 font-semibold">Failed to load game data</p>
+          <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1 max-w-sm">{error}</p>
         </div>
         <Button variant="secondary" onClick={() => setStep('select-system')}>
           Try Again
@@ -193,10 +191,10 @@ export function BuilderPage() {
       <div className="flex-1 flex flex-col items-center justify-center p-6">
         <div className="w-full max-w-lg">
           <div className="mb-8 text-center">
-            <h1 className="font-display text-3xl font-extrabold uppercase tracking-wide text-steel-100 mb-2">
+            <h1 className="font-display text-3xl font-extrabold uppercase tracking-wide text-neutral-900 dark:text-neutral-100 mb-2">
               Select Game System
             </h1>
-            <p className="text-steel-400 text-sm">
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm">
               Data loads directly from the community BSData repository
             </p>
           </div>
@@ -213,33 +211,38 @@ export function BuilderPage() {
   // ── Builder ─────────────────────────────────────────────────────────────────
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Builder toolbar */}
-      <div className="shrink-0 border-b border-steel-800 bg-void-900/60 px-4 py-2 flex items-center gap-3">
+      {/* Toolbar */}
+      <div className="shrink-0 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 px-4 py-2 flex items-center gap-3">
         <button
           onClick={() => setStep('select-system')}
-          className="flex items-center gap-1 text-xs text-steel-500 hover:text-steel-300 transition-colors"
+          className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors font-medium cursor-pointer"
         >
-          <ArrowLeftIcon className="size-3" />
+          <ArrowLeftIcon className="size-3.5" />
           {activeRepo?.name}
         </button>
 
         <div className="flex-1" />
 
         {rosters.length > 0 && (
-          <select
-            value={activeRosterId ?? ''}
-            onChange={(e) => setActiveRoster(e.target.value || null)}
-            className={cn(
-              'text-xs bg-void-800 border border-steel-700 rounded-[2px]',
-              'text-steel-300 px-2 py-1',
-              'focus:outline-none focus:border-gold-600',
-            )}
-          >
-            {!activeRosterId && <option value="">— Select roster —</option>}
-            {rosters.map((r) => (
-              <option key={r.id} value={r.id}>{r.name}</option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={activeRosterId ?? ''}
+              onChange={(e) => setActiveRoster(e.target.value || null)}
+              className={cn(
+                'appearance-none text-xs rounded-lg border pl-3 pr-7 py-1.5',
+                'bg-white dark:bg-neutral-900',
+                'border-neutral-200 dark:border-neutral-700',
+                'text-neutral-700 dark:text-neutral-300',
+                'focus:outline-none focus:border-amber-400 dark:focus:border-amber-500',
+              )}
+            >
+              {!activeRosterId && <option value="">— Select roster —</option>}
+              {rosters.map((r) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </select>
+            <ChevronDownIcon className="absolute right-2 top-1/2 -translate-y-1/2 size-3 text-neutral-400 pointer-events-none" />
+          </div>
         )}
 
         <Button
@@ -253,14 +256,14 @@ export function BuilderPage() {
         </Button>
       </div>
 
-      {/* Three-column layout */}
+      {/* Two-column layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Unit Picker */}
-        <div className="w-[340px] lg:w-[380px] shrink-0 border-r border-steel-800 overflow-hidden flex flex-col">
+        {/* Unit Picker column */}
+        <div className="w-[320px] lg:w-[380px] shrink-0 border-r border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col bg-neutral-50 dark:bg-neutral-950">
           <div className="shrink-0 px-3 pt-3 pb-0">
-            <h2 className="font-display text-xs font-bold tracking-widest uppercase text-steel-500 mb-2">
-              Units
-            </h2>
+            <p className="font-display text-[11px] font-bold tracking-widest uppercase text-neutral-500 dark:text-neutral-400 mb-1">
+              Unit Browser
+            </p>
           </div>
           <UnitPicker
             catalogues={catalogues}
@@ -269,8 +272,8 @@ export function BuilderPage() {
           />
         </div>
 
-        {/* Roster panel */}
-        <div className="flex-1 overflow-hidden flex flex-col min-w-0">
+        {/* Roster panel column */}
+        <div className="flex-1 overflow-hidden flex flex-col min-w-0 bg-white dark:bg-neutral-950">
           {roster ? (
             <RosterPanel
               roster={roster}
@@ -280,13 +283,13 @@ export function BuilderPage() {
               className="flex-1"
             />
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center p-8">
-              <div className="size-16 rounded-full border-2 border-dashed border-steel-700 flex items-center justify-center">
-                <PlusIcon className="size-7 text-steel-600" />
+            <div className="flex-1 flex flex-col items-center justify-center gap-5 text-center p-8">
+              <div className="size-16 rounded-full border-2 border-dashed border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
+                <PlusIcon className="size-7 text-neutral-300 dark:text-neutral-600" />
               </div>
               <div>
-                <p className="text-steel-400 font-semibold mb-1">No roster open</p>
-                <p className="text-steel-600 text-sm">Create a new roster or click a unit to start</p>
+                <p className="text-neutral-700 dark:text-neutral-300 font-semibold mb-1">No roster open</p>
+                <p className="text-neutral-400 dark:text-neutral-500 text-sm">Create a new roster or click a unit to start building</p>
               </div>
               <Button
                 variant="primary"
@@ -309,9 +312,9 @@ export function BuilderPage() {
         description={`${activeRepo?.name ?? 'Game system'} · ${gameSystem?.name ?? ''}`}
         size="sm"
       >
-        <div className="space-y-4">
+        <div className="space-y-5">
           <div>
-            <label className="block text-xs font-mono uppercase tracking-widest text-steel-400 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1.5">
               Roster Name
             </label>
             <input
@@ -320,15 +323,18 @@ export function BuilderPage() {
               value={newRosterForm.name}
               onChange={(e) => setNewRosterForm((f) => ({ ...f, name: e.target.value }))}
               className={cn(
-                'w-full bg-void-900 border border-steel-700 rounded-[3px] px-3 py-2',
-                'text-sm text-steel-100',
-                'focus:outline-none focus:border-gold-600 focus:ring-1 focus:ring-gold-600/30',
+                'w-full rounded-lg border px-3 py-2 text-sm',
+                'bg-white dark:bg-neutral-900',
+                'border-neutral-200 dark:border-neutral-700',
+                'text-neutral-900 dark:text-neutral-100',
+                'focus:outline-none focus:border-amber-400 dark:focus:border-amber-500 focus:ring-2 focus:ring-amber-400/20',
               )}
               placeholder="My Army"
             />
           </div>
+
           <div>
-            <label className="block text-xs font-mono uppercase tracking-widest text-steel-400 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1.5">
               Points Limit
             </label>
             <div className="flex gap-2 flex-wrap">
@@ -337,10 +343,10 @@ export function BuilderPage() {
                   key={pts}
                   onClick={() => setNewRosterForm((f) => ({ ...f, pointsLimit: pts }))}
                   className={cn(
-                    'px-3 py-1.5 rounded-[3px] text-sm font-mono border transition-colors',
+                    'px-3 py-1.5 rounded-lg text-sm font-mono border transition-colors cursor-pointer',
                     newRosterForm.pointsLimit === pts
-                      ? 'bg-gold-500 text-void-950 border-gold-400 font-bold'
-                      : 'bg-void-900 text-steel-400 border-steel-700 hover:border-steel-500',
+                      ? 'bg-amber-500 text-white border-amber-500 font-bold'
+                      : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600',
                   )}
                 >
                   {pts}
@@ -351,14 +357,17 @@ export function BuilderPage() {
                 value={newRosterForm.pointsLimit}
                 onChange={(e) => setNewRosterForm((f) => ({ ...f, pointsLimit: parseInt(e.target.value) || 2000 }))}
                 className={cn(
-                  'w-20 bg-void-900 border border-steel-700 rounded-[3px] px-2 py-1.5',
-                  'text-sm font-mono text-steel-300 text-right',
-                  'focus:outline-none focus:border-gold-600',
+                  'w-20 rounded-lg border px-2 py-1.5',
+                  'bg-white dark:bg-neutral-900',
+                  'border-neutral-200 dark:border-neutral-700',
+                  'text-sm font-mono text-neutral-700 dark:text-neutral-300 text-right',
+                  'focus:outline-none focus:border-amber-400 dark:focus:border-amber-500',
                 )}
               />
             </div>
           </div>
-          <div className="flex justify-end gap-2 pt-2">
+
+          <div className="flex justify-end gap-2 pt-1">
             <Button variant="ghost" onClick={() => setNewRosterOpen(false)}>Cancel</Button>
             <Button
               variant="primary"
