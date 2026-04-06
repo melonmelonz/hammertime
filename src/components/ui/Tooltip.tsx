@@ -41,7 +41,7 @@ export function Tooltip({ content, children, placement = 'top', className }: Too
         <span
           className={cn(
             'absolute z-50 pointer-events-none',
-            'px-2 py-1 rounded-[3px] text-xs text-steel-100 bg-steel-800 border border-steel-600',
+            'px-2 py-1 rounded-md text-xs text-neutral-100 bg-neutral-800 dark:bg-neutral-700 border border-neutral-700',
             'whitespace-nowrap shadow-lg',
             'animate-fade-in',
             placementClasses[placement],
