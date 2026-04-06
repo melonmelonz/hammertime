@@ -14,9 +14,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variants: Record<Variant, string> = {
   primary: [
-    'bg-amber-600 text-white font-semibold',
-    'hover:bg-amber-700 active:bg-amber-800',
-    'dark:bg-amber-500 dark:hover:bg-amber-400 dark:text-neutral-950',
+    'bg-red-600 text-white font-semibold',
+    'hover:bg-red-700 active:bg-red-800',
+    'dark:bg-red-600 dark:hover:bg-red-500',
     'shadow-sm',
   ].join(' '),
 
@@ -36,7 +36,6 @@ const variants: Record<Variant, string> = {
   danger: [
     'bg-red-600 text-white font-medium',
     'hover:bg-red-700 active:bg-red-800',
-    'dark:bg-red-600 dark:hover:bg-red-500',
   ].join(' '),
 
   outline: [
@@ -67,7 +66,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       className={cn(
         'inline-flex items-center justify-center select-none transition-colors duration-150 cursor-pointer',
         'disabled:opacity-40 disabled:pointer-events-none disabled:cursor-not-allowed',
-        'focus-visible:outline-2 focus-visible:outline-amber-500 focus-visible:outline-offset-2',
+        'focus-visible:outline-2 focus-visible:outline-red-500 focus-visible:outline-offset-2',
         variants[variant],
         sizes[size],
         className,

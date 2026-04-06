@@ -3,6 +3,7 @@ import { Layout } from '@/components/layout/Layout'
 import { HomePage } from '@/pages/Home'
 import { BuilderPage } from '@/pages/Builder'
 import { RostersPage } from '@/pages/Rosters'
+import { TrackerPage } from '@/pages/Tracker'
 import { NotFoundPage } from '@/pages/NotFound'
 
 export default function App() {
@@ -13,6 +14,7 @@ export default function App() {
           <Route index element={<HomePage />} />
           <Route path="builder" element={<BuilderPage />} />
           <Route path="rosters" element={<RostersPage />} />
+          <Route path="tracker" element={<TrackerPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

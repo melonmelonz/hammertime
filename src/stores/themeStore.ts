@@ -35,12 +35,14 @@ export const useThemeStore = create<ThemeState>()(
 )
 
 export function applyTheme(theme: Theme): void {
-  const dark =
-    theme === 'dark' || (theme === 'system' && prefersDark())
+  const dark = theme === 'dark' || (theme === 'system' && prefersDark())
   document.documentElement.classList.toggle('dark', dark)
 }
 
 export function initTheme(): void {
+  // Block all transitions during initial theme application to prevent flash
+  document.documentElement.classList.add('no-transition')
+
   const stored = localStorage.getItem('hammertime-theme')
   let theme: Theme = 'system'
   try {
@@ -48,6 +50,13 @@ export function initTheme(): void {
     theme = parsed?.state?.theme ?? 'system'
   } catch { /* ignore */ }
   applyTheme(theme)
+
+  // Remove no-transition after a frame so subsequent user toggles animate
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.documentElement.classList.remove('no-transition')
+    })
+  })
 
   // Watch system preference changes
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {

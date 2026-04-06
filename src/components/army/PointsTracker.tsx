@@ -12,13 +12,8 @@ export function PointsTracker({ current, limit, className }: PointsTrackerProps)
   const pct = limit > 0 ? Math.min(safeCurrent / limit, 1) : 0
   const over = safeCurrent > limit && limit > 0
 
-  const barColor = over
-    ? 'bg-red-500'
-    : pct > 0.9
-      ? 'bg-amber-500'
-      : 'bg-amber-500'
-
-  const textColor = over ? 'text-red-600 dark:text-red-400' : 'text-amber-700 dark:text-amber-400'
+  const barColor = over ? 'bg-red-700' : pct > 0.9 ? 'bg-red-500' : 'bg-red-600'
+  const textColor = over ? 'text-red-600 dark:text-red-400' : 'text-red-700 dark:text-red-400'
 
   return (
     <div className={cn('space-y-1.5', className)}>

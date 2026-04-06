@@ -16,11 +16,11 @@ function getCost(entry: BSSelectionEntry): number {
   return (entry.costs ?? []).reduce((sum, c) => sum + (c.value ?? 0), 0)
 }
 
-const TYPE_VARIANT: Record<string, 'amber' | 'default' | 'muted' | 'red' | 'blue'> = {
-  unit:    'amber',
+const TYPE_VARIANT: Record<string, 'red' | 'default' | 'muted' | 'blue' | 'amber'> = {
+  unit:    'red',
   model:   'blue',
   upgrade: 'default',
-  mount:   'red',
+  mount:   'amber',
 }
 
 export function UnitCard({ entry, onAdd, className }: UnitCardProps) {
@@ -43,7 +43,6 @@ export function UnitCard({ entry, onAdd, className }: UnitCardProps) {
       className,
     )}>
       <div className="flex items-center gap-2.5 px-3 py-2.5">
-        {/* Name + stats */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap mb-1">
             <span className="font-display font-bold text-sm tracking-wide uppercase text-neutral-900 dark:text-neutral-100 leading-none">
@@ -52,7 +51,6 @@ export function UnitCard({ entry, onAdd, className }: UnitCardProps) {
             <Badge variant={TYPE_VARIANT[type] ?? 'default'} size="sm">{type}</Badge>
           </div>
 
-          {/* Compact stat row */}
           {chars.length > 0 && (
             <div className="flex items-center gap-3 mt-1">
               {chars.slice(0, 6).map((c) => (
@@ -65,10 +63,9 @@ export function UnitCard({ entry, onAdd, className }: UnitCardProps) {
           )}
         </div>
 
-        {/* Actions */}
         <div className="flex items-center gap-1.5 shrink-0">
           {cost > 0 && (
-            <span className="font-mono text-sm font-bold text-amber-700 dark:text-amber-400 whitespace-nowrap">
+            <span className="font-mono text-sm font-bold text-red-700 dark:text-red-400 whitespace-nowrap">
               {cost}<span className="text-neutral-400 text-xs ml-0.5">pts</span>
             </span>
           )}
@@ -93,7 +90,6 @@ export function UnitCard({ entry, onAdd, className }: UnitCardProps) {
         </div>
       </div>
 
-      {/* Expanded details */}
       <AnimatePresence>
         {expanded && hasDetails && (
           <motion.div
@@ -104,7 +100,6 @@ export function UnitCard({ entry, onAdd, className }: UnitCardProps) {
             className="overflow-hidden"
           >
             <div className="border-t border-neutral-100 dark:border-neutral-800 px-3 py-2.5 space-y-2">
-              {/* Additional profiles (weapons, abilities) */}
               {profiles.slice(1).map((p) => (
                 <div key={p.id} className="bg-neutral-50 dark:bg-neutral-800/60 rounded-md px-2.5 py-2">
                   <p className="text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
@@ -122,7 +117,6 @@ export function UnitCard({ entry, onAdd, className }: UnitCardProps) {
                 </div>
               ))}
 
-              {/* Rules */}
               {rules.slice(0, 3).map((r) => (
                 <p key={r.id} className="text-xs text-neutral-600 dark:text-neutral-400">
                   <span className="font-semibold italic text-neutral-700 dark:text-neutral-300">{r.name}: </span>

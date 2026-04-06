@@ -28,12 +28,9 @@ interface NewRosterForm {
 export function BuilderPage() {
   const [step, setStep] = useState<BuilderStep>('select-system')
   const [newRosterOpen, setNewRosterOpen] = useState(false)
-  const [newRosterForm, setNewRosterForm] = useState<NewRosterForm>({
-    name: 'My Army',
-    pointsLimit: 2000,
-  })
+  const [newRosterForm, setNewRosterForm] = useState<NewRosterForm>({ name: 'My Army', pointsLimit: 2000 })
 
-  const { activeRepo, catalogues, gameSystem, loading, progress, error, loadRepo } = useCatalogueStore()
+  const { activeRepo, catalogues, gameSystem, loading, progress, error, loadRepo, resolver } = useCatalogueStore()
   const {
     rosters,
     activeRosterId,
@@ -57,14 +54,12 @@ export function BuilderPage() {
 
   const handleCreateRoster = useCallback(() => {
     if (!gameSystem) return
-
     const id = newRoster({
       name: newRosterForm.name,
       gameSystemId: gameSystem.id,
       gameSystemRevision: gameSystem.revision,
       pointsLimit: newRosterForm.pointsLimit,
     })
-
     const forceEntry = gameSystem.forceEntries?.[0]
     const cat = catalogues.find((c) => !c.library) ?? catalogues[0]
     if (forceEntry && cat) {
@@ -76,7 +71,6 @@ export function BuilderPage() {
         catalogueRevision: cat.revision,
       })
     }
-
     setNewRosterOpen(false)
     setActiveRoster(id)
   }, [gameSystem, newRosterForm, catalogues, newRoster, addForceToActive, setActiveRoster])
@@ -95,13 +89,7 @@ export function BuilderPage() {
       })
       if (forceEntry && cat) {
         addUnitWithForce(
-          {
-            name: forceEntry.name,
-            entryId: forceEntry.id,
-            catalogueId: cat.id,
-            catalogueName: cat.name,
-            catalogueRevision: cat.revision,
-          },
+          { name: forceEntry.name, entryId: forceEntry.id, catalogueId: cat.id, catalogueName: cat.name, catalogueRevision: cat.revision },
           entry,
         )
       }
@@ -111,13 +99,7 @@ export function BuilderPage() {
     if (roster.forces.length === 0) {
       if (forceEntry && cat) {
         addUnitWithForce(
-          {
-            name: forceEntry.name,
-            entryId: forceEntry.id,
-            catalogueId: cat.id,
-            catalogueName: cat.name,
-            catalogueRevision: cat.revision,
-          },
+          { name: forceEntry.name, entryId: forceEntry.id, catalogueId: cat.id, catalogueName: cat.name, catalogueRevision: cat.revision },
           entry,
         )
       }
@@ -131,31 +113,25 @@ export function BuilderPage() {
     removeUnit(forceId, selectionId)
   }, [removeUnit])
 
-  // ── Loading state ───────────────────────────────────────────────────────────
+  // ── Loading ─────────────────────────────────────────────────────────────────
   if (loading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-6 p-8">
         <Spinner size="lg" />
         <div className="text-center">
-          {progress?.stage === 'listing' && (
-            <p className="text-neutral-600 dark:text-neutral-400 text-sm">Fetching catalogue index...</p>
-          )}
-          {progress?.stage === 'gameSystem' && (
-            <p className="text-neutral-600 dark:text-neutral-400 text-sm">Loading game system...</p>
-          )}
+          {progress?.stage === 'listing' && <p className="text-neutral-500 text-sm">Fetching catalogue index...</p>}
+          {progress?.stage === 'gameSystem' && <p className="text-neutral-500 text-sm">Loading game system...</p>}
           {progress?.stage === 'catalogues' && (
             <>
               <p className="text-neutral-600 dark:text-neutral-400 text-sm">
                 Loading catalogues ({progress.loaded}/{progress.total})
               </p>
               {progress.currentFile && (
-                <p className="text-neutral-400 dark:text-neutral-500 text-xs mt-1 truncate max-w-xs">
-                  {progress.currentFile}
-                </p>
+                <p className="text-neutral-400 text-xs mt-1 truncate max-w-xs">{progress.currentFile}</p>
               )}
               <div className="mt-4 w-56 h-1.5 bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-amber-500 rounded-full"
+                  className="h-full bg-red-600 rounded-full"
                   animate={{ width: `${(progress.loaded / Math.max(progress.total, 1)) * 100}%` }}
                   transition={{ duration: 0.3 }}
                 />
@@ -167,20 +143,18 @@ export function BuilderPage() {
     )
   }
 
-  // ── Error state ─────────────────────────────────────────────────────────────
+  // ── Error ───────────────────────────────────────────────────────────────────
   if (error) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center gap-5 p-8">
         <div className="size-14 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-          <ExclamationTriangleIcon className="size-7 text-red-500" />
+          <ExclamationTriangleIcon className="size-7 text-red-600" />
         </div>
         <div className="text-center">
           <p className="text-neutral-800 dark:text-neutral-200 font-semibold">Failed to load game data</p>
-          <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1 max-w-sm">{error}</p>
+          <p className="text-neutral-500 text-sm mt-1 max-w-sm">{error}</p>
         </div>
-        <Button variant="secondary" onClick={() => setStep('select-system')}>
-          Try Again
-        </Button>
+        <Button variant="secondary" onClick={() => setStep('select-system')}>Try Again</Button>
       </div>
     )
   }
@@ -194,15 +168,11 @@ export function BuilderPage() {
             <h1 className="font-display text-3xl font-extrabold uppercase tracking-wide text-neutral-900 dark:text-neutral-100 mb-2">
               Select Game System
             </h1>
-            <p className="text-neutral-500 dark:text-neutral-400 text-sm">
+            <p className="text-neutral-500 text-sm">
               Data loads directly from the community BSData repository
             </p>
           </div>
-          <FactionSelector
-            onSelect={handleSelectRepo}
-            loading={loading}
-            activeId={activeRepo?.id}
-          />
+          <FactionSelector onSelect={handleSelectRepo} loading={loading} activeId={activeRepo?.id} />
         </div>
       </div>
     )
@@ -230,10 +200,9 @@ export function BuilderPage() {
               onChange={(e) => setActiveRoster(e.target.value || null)}
               className={cn(
                 'appearance-none text-xs rounded-lg border pl-3 pr-7 py-1.5',
-                'bg-white dark:bg-neutral-900',
-                'border-neutral-200 dark:border-neutral-700',
+                'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700',
                 'text-neutral-700 dark:text-neutral-300',
-                'focus:outline-none focus:border-amber-400 dark:focus:border-amber-500',
+                'focus:outline-none focus:border-red-400',
               )}
             >
               {!activeRosterId && <option value="">— Select roster —</option>}
@@ -256,23 +225,24 @@ export function BuilderPage() {
         </Button>
       </div>
 
-      {/* Two-column layout */}
+      {/* Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Unit Picker column */}
+        {/* Unit Picker */}
         <div className="w-[320px] lg:w-[380px] shrink-0 border-r border-neutral-200 dark:border-neutral-800 overflow-hidden flex flex-col bg-neutral-50 dark:bg-neutral-950">
           <div className="shrink-0 px-3 pt-3 pb-0">
-            <p className="font-display text-[11px] font-bold tracking-widest uppercase text-neutral-500 dark:text-neutral-400 mb-1">
+            <p className="font-display text-[11px] font-bold tracking-widest uppercase text-neutral-400 mb-1">
               Unit Browser
             </p>
           </div>
           <UnitPicker
             catalogues={catalogues}
+            resolver={resolver}
             onAddUnit={handleAddUnit}
             className="flex-1 overflow-hidden"
           />
         </div>
 
-        {/* Roster panel column */}
+        {/* Roster panel */}
         <div className="flex-1 overflow-hidden flex flex-col min-w-0 bg-white dark:bg-neutral-950">
           {roster ? (
             <RosterPanel
@@ -289,16 +259,8 @@ export function BuilderPage() {
               </div>
               <div>
                 <p className="text-neutral-700 dark:text-neutral-300 font-semibold mb-1">No roster open</p>
-                <p className="text-neutral-400 dark:text-neutral-500 text-sm">Create a new roster or click a unit to start building</p>
+                <p className="text-neutral-400 text-sm">Use the button above to create a roster, or click + on any unit to start</p>
               </div>
-              <Button
-                variant="primary"
-                onClick={() => setNewRosterOpen(true)}
-                disabled={!gameSystem}
-                icon={<PlusIcon />}
-              >
-                New Roster
-              </Button>
             </div>
           )}
         </div>
@@ -314,7 +276,7 @@ export function BuilderPage() {
       >
         <div className="space-y-5">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-1.5">
               Roster Name
             </label>
             <input
@@ -324,17 +286,15 @@ export function BuilderPage() {
               onChange={(e) => setNewRosterForm((f) => ({ ...f, name: e.target.value }))}
               className={cn(
                 'w-full rounded-lg border px-3 py-2 text-sm',
-                'bg-white dark:bg-neutral-900',
-                'border-neutral-200 dark:border-neutral-700',
+                'bg-white dark:bg-neutral-900 border-neutral-200 dark:border-neutral-700',
                 'text-neutral-900 dark:text-neutral-100',
-                'focus:outline-none focus:border-amber-400 dark:focus:border-amber-500 focus:ring-2 focus:ring-amber-400/20',
+                'focus:outline-none focus:border-red-400 focus:ring-2 focus:ring-red-400/20',
               )}
               placeholder="My Army"
             />
           </div>
-
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-1.5">
               Points Limit
             </label>
             <div className="flex gap-2 flex-wrap">
@@ -345,8 +305,8 @@ export function BuilderPage() {
                   className={cn(
                     'px-3 py-1.5 rounded-lg text-sm font-mono border transition-colors cursor-pointer',
                     newRosterForm.pointsLimit === pts
-                      ? 'bg-amber-500 text-white border-amber-500 font-bold'
-                      : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:border-neutral-300 dark:hover:border-neutral-600',
+                      ? 'bg-red-600 text-white border-red-600 font-bold'
+                      : 'bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 border-neutral-200 dark:border-neutral-700 hover:border-neutral-300',
                   )}
                 >
                   {pts}
@@ -356,24 +316,13 @@ export function BuilderPage() {
                 type="number"
                 value={newRosterForm.pointsLimit}
                 onChange={(e) => setNewRosterForm((f) => ({ ...f, pointsLimit: parseInt(e.target.value) || 2000 }))}
-                className={cn(
-                  'w-20 rounded-lg border px-2 py-1.5',
-                  'bg-white dark:bg-neutral-900',
-                  'border-neutral-200 dark:border-neutral-700',
-                  'text-sm font-mono text-neutral-700 dark:text-neutral-300 text-right',
-                  'focus:outline-none focus:border-amber-400 dark:focus:border-amber-500',
-                )}
+                className="w-20 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 px-2 py-1.5 text-sm font-mono text-neutral-700 dark:text-neutral-300 text-right focus:outline-none focus:border-red-400"
               />
             </div>
           </div>
-
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="ghost" onClick={() => setNewRosterOpen(false)}>Cancel</Button>
-            <Button
-              variant="primary"
-              onClick={handleCreateRoster}
-              disabled={!newRosterForm.name.trim()}
-            >
+            <Button variant="primary" onClick={handleCreateRoster} disabled={!newRosterForm.name.trim()}>
               Create Roster
             </Button>
           </div>

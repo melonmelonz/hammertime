@@ -4,9 +4,11 @@ import { cn, groupBy, sortBy } from '@/lib/utils'
 import { UnitCard } from './UnitCard'
 import { Spinner } from '@/components/ui/Spinner'
 import type { BSSelectionEntry, BSCatalogue } from '@/lib/bsdata/types'
+import type { CatalogueResolver } from '@/lib/bsdata'
 
 interface UnitPickerProps {
   catalogues: BSCatalogue[]
+  resolver: CatalogueResolver | null
   loading?: boolean
   onAddUnit: (entry: BSSelectionEntry, catalogueId: string) => void
   className?: string
@@ -14,15 +16,40 @@ interface UnitPickerProps {
 
 type UnitType = 'unit' | 'model' | 'upgrade' | 'all'
 
-function flattenEntries(catalogues: BSCatalogue[]): Array<{ entry: BSSelectionEntry; catalogueId: string; catalogueName: string }> {
+function flattenEntries(
+  catalogues: BSCatalogue[],
+  resolver: CatalogueResolver | null,
+): Array<{ entry: BSSelectionEntry; catalogueId: string; catalogueName: string }> {
   const result: Array<{ entry: BSSelectionEntry; catalogueId: string; catalogueName: string }> = []
+
   for (const cat of catalogues) {
+    if (cat.library) continue // library catalogues are shared data, not user-selectable
+    const seenIds = new Set<string>()
+
+    // Direct top-level selection entries
     for (const e of cat.selectionEntries ?? []) {
-      if (!e.hidden) {
+      if (!e.hidden && !seenIds.has(e.id)) {
+        seenIds.add(e.id)
         result.push({ entry: e, catalogueId: cat.id, catalogueName: cat.name })
       }
     }
+
+    // Resolve entryLinks — in 40k these are the actual unit entries per faction
+    if (resolver) {
+      for (const link of cat.entryLinks ?? []) {
+        if (link.hidden || link.type !== 'selectionEntry') continue
+        const resolved = resolver.resolveLink(link)
+        if (!resolved || resolved.hidden) continue
+        if (!('costs' in resolved) && !('type' in resolved)) continue // skip groups
+        const entry = resolved as BSSelectionEntry
+        if (!seenIds.has(link.id)) {
+          seenIds.add(link.id)
+          result.push({ entry, catalogueId: cat.id, catalogueName: cat.name })
+        }
+      }
+    }
   }
+
   return result
 }
 
@@ -33,12 +60,12 @@ const TYPE_TABS: { value: UnitType; label: string }[] = [
   { value: 'upgrade', label: 'Upgrades' },
 ]
 
-export function UnitPicker({ catalogues, loading, onAddUnit, className }: UnitPickerProps) {
+export function UnitPicker({ catalogues, resolver, loading, onAddUnit, className }: UnitPickerProps) {
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<UnitType>('all')
   const [selectedCatalogue, setSelectedCatalogue] = useState<string>('all')
 
-  const allEntries = useMemo(() => flattenEntries(catalogues), [catalogues])
+  const allEntries = useMemo(() => flattenEntries(catalogues, resolver), [catalogues, resolver])
 
   const catalogueOptions = useMemo(() => {
     const seen = new Set<string>()
@@ -80,7 +107,6 @@ export function UnitPicker({ catalogues, loading, onAddUnit, className }: UnitPi
     <div className={cn('flex flex-col h-full', className)}>
       {/* Search & Filters */}
       <div className="shrink-0 px-3 pt-3 pb-2 space-y-2 border-b border-neutral-100 dark:border-neutral-800">
-        {/* Search input */}
         <div className="relative">
           <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-neutral-400 pointer-events-none" />
           <input
@@ -94,13 +120,11 @@ export function UnitPicker({ catalogues, loading, onAddUnit, className }: UnitPi
               'border-neutral-200 dark:border-neutral-700',
               'text-neutral-900 dark:text-neutral-100',
               'placeholder:text-neutral-400 dark:placeholder:text-neutral-600',
-              'focus:outline-none focus:border-amber-400 dark:focus:border-amber-500 focus:ring-2 focus:ring-amber-400/20',
-              'transition-colors',
+              'focus:outline-none focus:border-red-400 dark:focus:border-red-500 focus:ring-2 focus:ring-red-400/20',
             )}
           />
         </div>
 
-        {/* Type filter tabs */}
         <div className="flex items-center gap-1">
           <FunnelIcon className="size-3.5 text-neutral-400 shrink-0 mr-0.5" />
           {TYPE_TABS.map(({ value, label }) => (
@@ -110,7 +134,7 @@ export function UnitPicker({ catalogues, loading, onAddUnit, className }: UnitPi
               className={cn(
                 'px-2.5 py-1 text-xs rounded-md font-medium transition-colors cursor-pointer',
                 typeFilter === value
-                  ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400'
+                  ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
                   : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800',
               )}
             >
@@ -127,7 +151,7 @@ export function UnitPicker({ catalogues, loading, onAddUnit, className }: UnitPi
                 'bg-white dark:bg-neutral-900',
                 'border-neutral-200 dark:border-neutral-700',
                 'text-neutral-600 dark:text-neutral-300',
-                'focus:outline-none focus:border-amber-400 dark:focus:border-amber-500',
+                'focus:outline-none focus:border-red-400',
               )}
             >
               <option value="all">All factions</option>
@@ -145,7 +169,7 @@ export function UnitPicker({ catalogues, loading, onAddUnit, className }: UnitPi
           <div className="text-center py-12">
             <p className="text-neutral-500 dark:text-neutral-400 text-sm">
               {allEntries.length === 0
-                ? 'Select a game system to browse units'
+                ? 'No units found — try a different faction'
                 : 'No units match your search'}
             </p>
           </div>

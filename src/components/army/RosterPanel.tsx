@@ -19,18 +19,12 @@ function selectionCost(s: RosterSelection): number {
     + s.selections.reduce((t, child) => t + selectionCost(child), 0)
 }
 
-function ForceSection({
-  force,
-  onRemove,
-}: {
-  force: RosterForce
-  onRemove: (selectionId: string) => void
-}) {
+function ForceSection({ force, onRemove }: { force: RosterForce; onRemove: (selectionId: string) => void }) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center gap-2 px-1 pb-0.5">
         <div className="flex-1 min-w-0">
-          <p className="font-display text-[11px] font-bold tracking-widest uppercase text-amber-600 dark:text-amber-500 truncate">
+          <p className="font-display text-[11px] font-bold tracking-widest uppercase text-red-600 dark:text-red-500 truncate">
             {force.catalogueName}
           </p>
         </div>
@@ -38,9 +32,7 @@ function ForceSection({
       </div>
 
       {force.selections.length === 0 ? (
-        <p className="text-xs text-neutral-400 dark:text-neutral-600 italic text-center py-4">
-          No units added yet
-        </p>
+        <p className="text-xs text-neutral-400 italic text-center py-4">No units added yet</p>
       ) : (
         <div className="space-y-1">
           {force.selections.map((sel) => (
@@ -52,13 +44,7 @@ function ForceSection({
   )
 }
 
-function SelectionRow({
-  selection,
-  onRemove,
-}: {
-  selection: RosterSelection
-  onRemove: () => void
-}) {
+function SelectionRow({ selection, onRemove }: { selection: RosterSelection; onRemove: () => void }) {
   const cost = selectionCost(selection)
 
   return (
@@ -71,8 +57,7 @@ function SelectionRow({
         'flex items-center gap-2 px-2.5 py-2 rounded-lg border group',
         'bg-white dark:bg-neutral-900',
         'border-neutral-200 dark:border-neutral-800',
-        'hover:border-neutral-300 dark:hover:border-neutral-700',
-        'transition-colors',
+        'hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors',
       )}
     >
       <div className="flex-1 min-w-0">
@@ -80,19 +65,19 @@ function SelectionRow({
           {selection.customName ?? selection.name}
         </p>
         {selection.selections.length > 0 && (
-          <p className="text-[10px] text-neutral-400 dark:text-neutral-500 truncate mt-0.5">
+          <p className="text-[10px] text-neutral-400 truncate mt-0.5">
             {selection.selections.map((s) => s.name).join(', ')}
           </p>
         )}
       </div>
       {cost > 0 && (
-        <span className="text-xs font-mono font-bold text-amber-700 dark:text-amber-400 shrink-0">
+        <span className="text-xs font-mono font-bold text-red-700 dark:text-red-400 shrink-0">
           {formatPoints(cost)}<span className="text-neutral-400 text-[10px] ml-0.5">pts</span>
         </span>
       )}
       <button
         onClick={onRemove}
-        className="opacity-0 group-hover:opacity-100 p-1 rounded text-neutral-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all cursor-pointer"
+        className="opacity-0 group-hover:opacity-100 p-1 rounded text-neutral-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all cursor-pointer"
         aria-label="Remove unit"
       >
         <TrashIcon className="size-3.5" />
@@ -122,7 +107,6 @@ export function RosterPanel({ roster, onRemoveUnit, onRename, onSetLimit, classN
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
-      {/* Roster header */}
       <div className="shrink-0 px-4 py-3.5 border-b border-neutral-100 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/50">
         {editingName ? (
           <div className="flex items-center gap-2 mb-3">
@@ -137,22 +121,16 @@ export function RosterPanel({ roster, onRemoveUnit, onRename, onSetLimit, classN
               className={cn(
                 'flex-1 rounded-lg border px-2.5 py-1.5',
                 'bg-white dark:bg-neutral-800',
-                'border-amber-400 dark:border-amber-500',
+                'border-red-400 dark:border-red-600',
                 'text-sm font-display font-bold uppercase tracking-wide',
                 'text-neutral-900 dark:text-neutral-100',
-                'focus:outline-none focus:ring-2 focus:ring-amber-400/30',
+                'focus:outline-none focus:ring-2 focus:ring-red-400/30',
               )}
             />
-            <button
-              onClick={handleNameSave}
-              className="p-1.5 rounded-md text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors cursor-pointer"
-            >
+            <button onClick={handleNameSave} className="p-1.5 rounded-md text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer">
               <CheckIcon className="size-4" />
             </button>
-            <button
-              onClick={() => setEditingName(false)}
-              className="p-1.5 rounded-md text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-            >
+            <button onClick={() => setEditingName(false)} className="p-1.5 rounded-md text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer">
               <XMarkIcon className="size-4" />
             </button>
           </div>
@@ -161,17 +139,17 @@ export function RosterPanel({ roster, onRemoveUnit, onRename, onSetLimit, classN
             onClick={() => { setEditingName(true); setNameInput(roster.name) }}
             className="flex items-center gap-1.5 group mb-3 cursor-pointer"
           >
-            <h2 className="font-display text-base font-bold tracking-wide uppercase text-neutral-900 dark:text-neutral-100 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">
+            <h2 className="font-display text-base font-bold tracking-wide uppercase text-neutral-900 dark:text-neutral-100 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
               {roster.name}
             </h2>
-            <PencilIcon className="size-3.5 text-neutral-400 group-hover:text-amber-500 transition-colors" />
+            <PencilIcon className="size-3.5 text-neutral-400 group-hover:text-red-500 transition-colors" />
           </button>
         )}
 
         <PointsTracker current={roster.points} limit={roster.pointsLimit} />
 
         <div className="flex items-center justify-between mt-2.5">
-          <span className="text-xs text-neutral-400 dark:text-neutral-500 font-mono tabular-nums">
+          <span className="text-xs text-neutral-400 font-mono tabular-nums">
             {totalUnits} unit{totalUnits !== 1 ? 's' : ''}
           </span>
           {editingLimit ? (
@@ -185,26 +163,15 @@ export function RosterPanel({ roster, onRemoveUnit, onRename, onSetLimit, classN
                   if (e.key === 'Enter') handleLimitSave()
                   if (e.key === 'Escape') setEditingLimit(false)
                 }}
-                className={cn(
-                  'w-20 rounded-md border px-1.5 py-0.5',
-                  'bg-white dark:bg-neutral-800',
-                  'border-amber-400 dark:border-amber-500',
-                  'text-xs font-mono text-right',
-                  'text-neutral-900 dark:text-neutral-100',
-                  'focus:outline-none',
-                )}
+                className="w-20 rounded-md border border-red-400 bg-white dark:bg-neutral-800 px-1.5 py-0.5 text-xs font-mono text-right text-neutral-900 dark:text-neutral-100 focus:outline-none"
               />
-              <button onClick={handleLimitSave} className="p-0.5 text-amber-600 dark:text-amber-400 cursor-pointer">
-                <CheckIcon className="size-3.5" />
-              </button>
-              <button onClick={() => setEditingLimit(false)} className="p-0.5 text-neutral-400 cursor-pointer">
-                <XMarkIcon className="size-3.5" />
-              </button>
+              <button onClick={handleLimitSave} className="p-0.5 text-red-600 cursor-pointer"><CheckIcon className="size-3.5" /></button>
+              <button onClick={() => setEditingLimit(false)} className="p-0.5 text-neutral-400 cursor-pointer"><XMarkIcon className="size-3.5" /></button>
             </div>
           ) : (
             <button
               onClick={() => { setEditingLimit(true); setLimitInput(String(roster.pointsLimit)) }}
-              className="text-xs text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 font-mono flex items-center gap-1 group cursor-pointer transition-colors"
+              className="text-xs text-neutral-400 hover:text-neutral-600 font-mono flex items-center gap-1 group cursor-pointer transition-colors"
             >
               Limit: {formatPoints(roster.pointsLimit)} pts
               <PencilIcon className="size-2.5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -213,21 +180,16 @@ export function RosterPanel({ roster, onRemoveUnit, onRename, onSetLimit, classN
         </div>
       </div>
 
-      {/* Force list */}
       <div className="flex-1 overflow-y-auto p-3 space-y-5">
         <AnimatePresence>
           {roster.forces.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-neutral-500 text-sm">No detachments added</p>
-              <p className="text-neutral-400 dark:text-neutral-600 text-xs mt-1">Select a game system to get started</p>
+              <p className="text-neutral-500 text-sm">No detachments added yet</p>
             </div>
           ) : (
             roster.forces.map((force) => (
               <motion.div key={force.id} layout>
-                <ForceSection
-                  force={force}
-                  onRemove={(selectionId) => onRemoveUnit(force.id, selectionId)}
-                />
+                <ForceSection force={force} onRemove={(id) => onRemoveUnit(force.id, id)} />
               </motion.div>
             ))
           )}
