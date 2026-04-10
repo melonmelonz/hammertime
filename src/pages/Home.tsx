@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -13,7 +14,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 
 interface FeatureCardProps {
-  icon: React.ReactNode
+  icon: ReactNode
   title: string
   description: string
   delay?: number
@@ -28,10 +29,11 @@ function FeatureCard({ icon, title, description, delay = 0 }: FeatureCardProps) 
       transition={{ delay, duration: 0.35 }}
       className={cn(
         'p-5 rounded-xl border',
-        'bg-white dark:bg-neutral-900',
+        'bg-white dark:bg-neutral-900/80',
         'border-neutral-200 dark:border-neutral-800',
-        'hover:border-red-200 dark:hover:border-red-900/50 hover:shadow-sm',
-        'transition-all duration-150',
+        'hover:border-red-300 dark:hover:border-red-800/70',
+        'hover:-translate-y-0.5 hover:shadow-md dark:hover:shadow-red-950/40',
+        'transition-all duration-200',
       )}
     >
       <div className="flex items-start gap-3.5 mb-3">
@@ -61,15 +63,20 @@ export function HomePage() {
     <div className="flex flex-col">
       {/* Hero */}
       <section className="relative overflow-hidden bg-white dark:bg-neutral-950">
-        {/* Subtle dot grid */}
+        {/* Diamond grid */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-30 dark:opacity-10"
+          className="absolute inset-0 pointer-events-none opacity-15 dark:opacity-20"
           style={{
-            backgroundImage: `radial-gradient(circle, #dc2626 1px, transparent 1px)`,
-            backgroundSize: '32px 32px',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 1 L39 20 L20 39 L1 20 Z' fill='none' stroke='%23dc2626' stroke-width='0.5'/%3E%3C/svg%3E")`,
+            backgroundSize: '40px 40px',
           }}
         />
-        <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white via-white/70 to-white dark:from-neutral-950 dark:via-neutral-950/70 dark:to-neutral-950" />
+        {/* Fade overlay */}
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white via-white/60 to-white dark:from-neutral-950 dark:via-neutral-950/60 dark:to-neutral-950" />
+        {/* Red glow blob — dark mode */}
+        <div className="absolute inset-0 pointer-events-none hidden dark:block">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[450px] rounded-full bg-red-600/8 blur-[120px]" />
+        </div>
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-20 pb-24 text-center">
           <motion.div
@@ -92,7 +99,7 @@ export function HomePage() {
             style={{ lineHeight: '0.9' }}
           >
             <span className="block">Build Your</span>
-            <span className="block text-red-600 dark:text-red-500">
+            <span className="block text-red-600 dark:text-red-500 text-glow-red">
               Perfect Army
             </span>
           </motion.h1>
@@ -136,10 +143,10 @@ export function HomePage() {
         </div>
       </section>
 
-      <div className="h-px bg-neutral-100 dark:bg-neutral-800" />
+      <div className="h-px bg-neutral-100 dark:bg-neutral-800/60" />
 
       {/* Features */}
-      <section className="bg-neutral-50 dark:bg-neutral-950">
+      <section className="bg-neutral-50 dark:bg-[#0b0b0b]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-20">
           <div className="text-center mb-12">
             <h2 className="font-display text-3xl sm:text-4xl font-extrabold uppercase tracking-wide text-neutral-900 dark:text-neutral-100 mb-3">
@@ -158,13 +165,19 @@ export function HomePage() {
       </section>
 
       {/* CTA */}
-      <section className="border-t border-neutral-100 dark:border-neutral-800 bg-white dark:bg-neutral-950">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-20 text-center">
+      <section className="relative overflow-hidden border-t border-red-900/20 dark:border-red-900/30 bg-neutral-50 dark:bg-neutral-950">
+        {/* Red accent line */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-px bg-gradient-to-r from-transparent via-red-600/60 to-transparent" />
+        {/* Glow */}
+        <div className="absolute inset-0 pointer-events-none hidden dark:block">
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full bg-red-600/6 blur-[100px]" />
+        </div>
+        <div className="relative max-w-3xl mx-auto px-4 sm:px-6 py-24 text-center">
           <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="font-display text-4xl sm:text-6xl font-extrabold uppercase tracking-wide text-neutral-900 dark:text-neutral-50 mb-2">
+            <h2 className="font-display text-5xl sm:text-7xl font-extrabold uppercase tracking-wide text-neutral-900 dark:text-neutral-50 mb-2 leading-none">
               Blood for the
             </h2>
-            <h2 className="font-display text-4xl sm:text-6xl font-extrabold uppercase tracking-wide text-red-600 dark:text-red-500 mb-8">
+            <h2 className="font-display text-5xl sm:text-7xl font-extrabold uppercase tracking-wide text-red-600 dark:text-red-500 mb-10 leading-none text-glow-red">
               Blood God
             </h2>
             <Link to="/builder">

@@ -44,7 +44,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
     'border-neutral-200 dark:border-neutral-700',
     'text-neutral-900 dark:text-neutral-100',
     'placeholder:text-neutral-400 dark:placeholder:text-neutral-500',
-    'focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent',
+    'focus:outline-none focus:ring-2 focus:ring-red-400/20 focus:border-red-400',
     'transition-colors',
   )
 
@@ -106,7 +106,7 @@ export function AuthModal({ open, onClose }: AuthModalProps) {
             <button
               type="button"
               onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError(null) }}
-              className="text-amber-600 dark:text-amber-400 hover:underline font-medium"
+              className="text-red-600 dark:text-red-400 hover:underline font-medium"
             >
               {mode === 'signin' ? 'Sign up' : 'Sign in'}
             </button>

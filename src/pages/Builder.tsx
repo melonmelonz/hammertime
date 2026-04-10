@@ -81,12 +81,13 @@ export function BuilderPage() {
 
     if (!roster) {
       if (!gameSystem) return
-      newRoster({
+      const id = newRoster({
         name: 'My Army',
         gameSystemId: gameSystem.id,
         gameSystemRevision: gameSystem.revision,
         pointsLimit: 2000,
       })
+      setActiveRoster(id)
       if (forceEntry && cat) {
         addUnitWithForce(
           { name: forceEntry.name, entryId: forceEntry.id, catalogueId: cat.id, catalogueName: cat.name, catalogueRevision: cat.revision },
