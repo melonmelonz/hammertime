@@ -402,7 +402,7 @@ export function TrackerPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={resetGame} icon={<ArrowPathIcon />}>Reset</Button>
+          <Button variant="ghost" size="sm" onClick={() => { if (window.confirm('Abandon this game?')) resetGame() }} icon={<ArrowPathIcon />}>Reset</Button>
           <Button variant="secondary" size="sm" onClick={finishGame} icon={<CheckIcon />}>End Game</Button>
         </div>
       </div>
@@ -469,7 +469,7 @@ export function TrackerPage() {
           {game.activePlayer === 'p1'
             ? `End ${game.player1.name}'s Turn`
             : roundIndex < TOTAL_ROUNDS - 1
-              ? `End Round ${roundIndex + 1}`
+              ? `End ${game.player2.name}'s Turn`
               : 'End Battle'}
         </Button>
       </div>

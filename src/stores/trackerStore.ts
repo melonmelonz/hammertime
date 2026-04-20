@@ -237,10 +237,19 @@ export const useTrackerStore = create<TrackerState>()(
       setSecondaryVP: (roundIndex, player, secIndex, vp) => {
         set((state) => {
           if (!state.game) return state
+          const playerSetup = player === 'p1' ? state.game.player1 : state.game.player2
+          const sec = getSecondary(playerSetup.secondaryIds[secIndex])
+          const otherRoundsVP = state.game.rounds.reduce((sum, r, i) => {
+            if (i === roundIndex) return sum
+            return sum + (r[player].secondaryVP[secIndex] ?? 0)
+          }, 0)
+          const maxThisRound = sec
+            ? Math.min(sec.perRoundMax, Math.max(0, sec.maxVP - otherRoundsVP))
+            : vp
           const rounds = state.game.rounds.map((r, i) => {
             if (i !== roundIndex) return r
             const secondaryVP = [...r[player].secondaryVP]
-            secondaryVP[secIndex] = Math.max(0, vp)
+            secondaryVP[secIndex] = Math.max(0, Math.min(maxThisRound, vp))
             return { ...r, [player]: { ...r[player], secondaryVP } }
           })
           return { game: { ...state.game, rounds } }
@@ -269,7 +278,13 @@ export const useTrackerStore = create<TrackerState>()(
             if (nextRound >= TOTAL_ROUNDS) {
               return { game: { ...state.game, status: 'finished', activePlayer: 'p1' } }
             }
-            return { game: { ...state.game, currentRound: nextRound, activePlayer: 'p1' } }
+            // Carry objective positions forward to the next round
+            const currentObjectives = state.game.rounds[currentRound].objectives
+            const rounds = state.game.rounds.map((r, i) => {
+              if (i !== nextRound) return r
+              return { ...r, objectives: [...currentObjectives] }
+            })
+            return { game: { ...state.game, rounds, currentRound: nextRound, activePlayer: 'p1' } }
           }
         })
       },
