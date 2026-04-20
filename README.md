@@ -61,3 +61,7 @@ Data is fetched live from GitHub and cached locally — no backend required.
 ## Legal
 
 Not affiliated with or endorsed by Games Workshop. Warhammer 40,000 and all related marks are property of Games Workshop Ltd.
+
+## Bugs
+
+Currently aware of a ton of bugs, will hopefully get to a lot of them very soon.
